@@ -7,8 +7,6 @@ from langchain_core.prompts import ChatPromptTemplate # We keep the prompt for g
 import streamlit as st
 import os
 
-
-# --- STEP 1: CACHING HEAVY SETUP (The most important part for performance) ---
 # The '@st.cache_resource' decorator is necessary! 
 # It tells Streamlit to run this function ONLY ONCE when the app starts.
 # This prevents the heavy PyTorch embedding model from reloading every time you click a button, 
@@ -17,14 +15,14 @@ import os
 def setup_rag_pipeline(pdf_path, url, collection_name):
     """Initializes the database and embedding model—runs only one time."""
     
-    # 1a. Load the PDF file and break it into smaller pieces (chunks)
+    # Load the PDF file and break it into smaller pieces (chunks)
     loader = PyPDFLoader(pdf_path)
     documents = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=50)
     texts = text_splitter.split_documents(documents)
     print("Document chunking is complete.")
     
-    # 1b. Create the Embedding Model (A model that turns text into numbers/vectors)
+    # Create the Embedding Model (A model that turns text into numbers/vectors)
     model_name = "BAAI/bge-small-en"
     # We explicitly tell the model to use the CPU for stability
     model_kwargs = {'device': 'cpu'} 
@@ -37,7 +35,7 @@ def setup_rag_pipeline(pdf_path, url, collection_name):
     )
     print("Embedding model loaded.")
 
-    # 1c. Create/Connect to Qdrant (Our vector database)
+    # Create/Connect to Qdrant (Our vector database)
     # This process embeds the text chunks and stores them in Qdrant
     qdrant = QdrantVectorStore.from_documents(
         texts,
@@ -52,7 +50,7 @@ def setup_rag_pipeline(pdf_path, url, collection_name):
     return qdrant
 
 
-# --- STEP 2: CONFIGURATION & INITIALIZATION ---
+# STEP 2: CONFIGURATION & INITIALIZATION
 PDF_PATH = "./Archit_Dadhich's_Resume.pdf"
 QDRANT_URL = "http://localhost:6333"
 COLLECTION_NAME = "vector_db"
@@ -75,7 +73,7 @@ prompt_template = ChatPromptTemplate.from_messages([
 ])
 
 
-# --- STEP 3: STREAMLIT FRONTEND AND SIMPLIFIED EXECUTION ---
+# STEP 3: STREAMLIT FRONTEND AND SIMPLIFIED EXECUTION
 st.title("🧠 Simple Resume Analyzer (Groq + Qdrant)")
 st.caption("Ask questions about the content of the PDF resume.")
 
